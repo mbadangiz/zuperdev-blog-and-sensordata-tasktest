@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @default(autoincrement())
+  userId    String   @id @default(uuid()) @db.VarChar(50)
+  username  String   @unique @db.VarChar(30)
+  email     String   @unique @db.VarChar(80)
+  password  String   @db.VarChar(255)
+  isDeleted Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  profile   Profile?
+
+  @@index([id])
+}
+
+model Profile {
+  id     Int    @default(autoincrement())
+  userId String @id @unique @db.VarChar(50)
+  user   User   @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+
+  firstname String?   @db.VarChar(50)
+  lastname  String?   @db.VarChar(50)
+  bio       String?   @db.VarChar(150)
+  avatar    String?
+  location  Location?
+
+  @@index([id])
+}
+
+model Location {
+  id        Int     @id @default(autoincrement())
+  profileId String  @unique @db.VarChar(50)
+  profile   Profile @relation(fields: [profileId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
+
+  address   String?  @db.VarChar(100)
+  city      String?  @db.VarChar(30)
+  state     String?  @db.VarChar(30)
+  country   String?  @db.VarChar(30)
+  zipCode   String?  @db.VarChar(20)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([id])
+}
