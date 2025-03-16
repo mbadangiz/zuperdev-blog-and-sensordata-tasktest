@@ -8,15 +8,17 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { hash } from "bcrypt";
+import { compare, hash } from "bcrypt";
 import { VerificationMail } from "src/configs/mailTemplates.configs";
 import { MailerService } from "src/mailer/mailer.service";
 import { PrismaService } from "src/prisma/prisma.service";
 import { customInternalServerError } from "src/utils/customInternalServerError.utils";
 import { generateRandomNumberByLength } from "src/utils/generateRandomNumberByLength";
 import { SignupAuthDto } from "./dto/auth.dto";
+import { LoginDto } from "./dto/login.dto";
 import { SignupStepTwo, SingupStepThree } from "./dto/signup.dto";
 import { Tokens } from "./types/token.types";
+import { use } from "passport";
 
 @Injectable()
 export class AuthService {
@@ -26,11 +28,26 @@ export class AuthService {
     private readonly nodeMailer: MailerService,
   ) {}
 
-  async hashData(pass: string) {
+  private async generateJWT(payload: any): Promise<Tokens> {
+    const [at, rt] = await Promise.all([
+      this.jwt.signAsync(
+        { ...payload },
+        { secret: process.env.ACT_JWTSECRET, expiresIn: 60 * 15 },
+      ),
+      this.jwt.signAsync(
+        { ...payload },
+        { secret: process.env.REFT_JWTSECRET, expiresIn: 60 * 60 * 24 * 7 },
+      ),
+    ]);
+
+    return { accessToken: at, refreshToken: rt };
+  }
+
+  private async hashData(pass: string) {
     return await hash(pass, Number(process.env.COSTFACTOR) || 10);
   }
 
-  async findUserByEmail(email: string) {
+  private async findUserByEmail(email: string) {
     const user = await this.prisma.user.findUnique({ where: { email } });
 
     if (user)
@@ -39,7 +56,7 @@ export class AuthService {
         message: "Email is already in use.",
       });
   }
-  async findUserByUsername(username: string) {
+  private async findUserByUsername(username: string) {
     const user = await this.prisma.user.findUnique({
       where: { username },
     });
@@ -51,7 +68,7 @@ export class AuthService {
       });
   }
 
-  async findEmailInOtpRecs(email: string) {
+  private async findEmailInOtpRecs(email: string) {
     const otpRec = await this.prisma.oTPVerification.findUnique({
       where: { email },
     });
@@ -204,6 +221,40 @@ export class AuthService {
     }
   }
 
+  async login(body: LoginDto) {
+    const { emailOrUsername, password } = body;
+
+    let where;
+
+    if (emailOrUsername.includes("@")) where = { email: emailOrUsername };
+    else where = { username: emailOrUsername };
+
+    const user = await this.prisma.user.findUnique({ where });
+
+    if (!user) {
+      throw new NotFoundException({
+        success: false,
+        message: "No user was found with the provided credentials.",
+      });
+    }
+
+    const comparedPassword = await compare(password, user.password);
+
+    if (!comparedPassword) {
+      throw new ForbiddenException({
+        success: false,
+        message: "The username or password is incorrect.",
+      });
+    }
+    const token = await this.generateJWT({ userid: user.userId });
+
+    return {
+      success: true,
+      message: "Successful login",
+      tokens: token,
+    };
+  }
+
   async localSignup(dto: SignupAuthDto) {
     const { username, email } = dto;
 
@@ -263,19 +314,4 @@ export class AuthService {
 
   logOut() {}
   refereshToken() {}
-
-  async generateJWT(payload: any): Promise<Tokens> {
-    const [at, rt] = await Promise.all([
-      this.jwt.signAsync(
-        { ...payload },
-        { secret: process.env.ACT_JWTSECRET, expiresIn: 60 * 15 },
-      ),
-      this.jwt.signAsync(
-        { ...payload },
-        { secret: process.env.REFT_JWTSECRET, expiresIn: 60 * 60 * 24 * 7 },
-      ),
-    ]);
-
-    return { accessToken: at, refreshToken: rt };
-  }
 }

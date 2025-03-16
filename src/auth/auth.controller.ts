@@ -11,6 +11,7 @@ import {
   SingupStepThreeDtoSwagger,
 } from "./dto/signup.dto";
 import { Tokens } from "./types/token.types";
+import { LoginDto, LoginDtoSwagger } from "./dto/login.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -38,6 +39,12 @@ export class AuthController {
   @ApiBody(SingupStepThreeDtoSwagger)
   stepThree(@Body() body: SingupStepThree) {
     return this.AuthService.signupStep3(body);
+  }
+
+  @Post("local/login")
+  @ApiBody(LoginDtoSwagger)
+  login(@Body() body: LoginDto) {
+    return this.AuthService.login(body);
   }
 
   @Post("local/signin")
