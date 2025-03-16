@@ -3,8 +3,16 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgres"
   url      = env("DATABASE_URL")
+}
+
+model OTPVerification {
+  id               Int      @id @default(autoincrement())
+  email            String   @unique @db.VarChar(80)
+  verificationCode String   @db.VarChar(10)
+  expirationDate   DateTime
+  hasVerified      Boolean  @default(false)
 }
 
 model User {
@@ -16,30 +24,27 @@ model User {
   isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  profile   Profile?
+
+  profile     Profile?     @relation("profile-to-users")
+  hashedTokes HashedTokes?
+  UsersRoles  UsersRoles[] @relation("usersrole-to-users")
 
   @@index([id])
 }
 
 model Profile {
-  id     Int    @default(autoincrement())
-  userId String @id @unique @db.VarChar(50)
-  user   User   @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
-
+  userId    String    @id @unique @db.VarChar(50)
+  user      User      @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade, name: "profile-to-users")
   firstname String?   @db.VarChar(50)
   lastname  String?   @db.VarChar(50)
   bio       String?   @db.VarChar(150)
   avatar    String?
-  location  Location?
-
-  @@index([id])
+  location  Location? @relation("location-to-profile")
 }
 
 model Location {
-  id        Int     @id @default(autoincrement())
-  profileId String  @unique @db.VarChar(50)
-  profile   Profile @relation(fields: [profileId], references: [userId], onDelete: Cascade, onUpdate: Cascade)
-
+  profileId String   @id @unique @db.VarChar(50)
+  profile   Profile  @relation(fields: [profileId], references: [userId], onDelete: Cascade, onUpdate: Cascade, name: "location-to-profile")
   address   String?  @db.VarChar(100)
   city      String?  @db.VarChar(30)
   state     String?  @db.VarChar(30)
@@ -47,6 +52,26 @@ model Location {
   zipCode   String?  @db.VarChar(20)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
 
-  @@index([id])
+model HashedTokes {
+  id       Int    @id @default(autoincrement())
+  userid   String @unique @db.VarChar(50)
+  user     User   @relation(fields: [userid], references: [userId], onDelete: Cascade)
+  hashedRT String
+}
+
+model Roles {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(20)
+  description String       @db.VarChar(100)
+  UsersRoles  UsersRoles[] @relation("usersrole-to-roles")
+}
+
+model UsersRoles {
+  id     Int    @id @default(autoincrement())
+  userId String @db.VarChar(50)
+  user   User   @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade, name: "usersrole-to-users")
+  roleId Int
+  roles  Roles  @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: Cascade, name: "usersrole-to-roles")
 }
