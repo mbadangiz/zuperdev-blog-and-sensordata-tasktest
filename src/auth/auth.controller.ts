@@ -1,7 +1,8 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
 import { ApiBody } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { SignupAuthDto, SignupAuthDtoSwagger } from "./dto/auth.dto";
+import { LoginDto, LoginDtoSwagger } from "./dto/login.dto";
 import {
   SignupStepOne,
   SignupStepOneDtoSwagger,
@@ -10,8 +11,6 @@ import {
   SingupStepThree,
   SingupStepThreeDtoSwagger,
 } from "./dto/signup.dto";
-import { Tokens } from "./types/token.types";
-import { LoginDto, LoginDtoSwagger } from "./dto/login.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -24,12 +23,14 @@ export class AuthController {
   }
 
   @Post("local/signup/step1")
+  @HttpCode(HttpStatus.OK)
   @ApiBody(SignupStepOneDtoSwagger)
   stepOne(@Body() signUpStepOneDto: SignupStepOne) {
     return this.AuthService.signupStep1(signUpStepOneDto.email);
   }
 
   @Post("local/signup/step2")
+  @HttpCode(HttpStatus.OK)
   @ApiBody(SignupStepTwoDtoSwagger)
   stepTwo(@Body() body: SignupStepTwo) {
     return this.AuthService.signupStep2(body);
@@ -42,23 +43,9 @@ export class AuthController {
   }
 
   @Post("local/login")
+  @HttpCode(HttpStatus.OK)
   @ApiBody(LoginDtoSwagger)
   login(@Body() body: LoginDto) {
     return this.AuthService.login(body);
-  }
-
-  @Post("local/signin")
-  localSignin(): Promise<Tokens> {
-    return this.AuthService.localSignin();
-  }
-
-  @Post("logout")
-  logOut() {
-    return this.AuthService.logOut();
-  }
-
-  @Post("refresh")
-  refereshToken() {
-    return this.AuthService.refereshToken();
   }
 }

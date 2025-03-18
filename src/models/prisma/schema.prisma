@@ -39,6 +39,8 @@ model Profile {
   lastname  String?   @db.VarChar(50)
   bio       String?   @db.VarChar(150)
   avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   location  Location? @relation("location-to-profile")
 }
 
@@ -59,6 +61,7 @@ model HashedTokes {
   userid   String @unique @db.VarChar(50)
   user     User   @relation(fields: [userid], references: [userId], onDelete: Cascade)
   hashedRT String
+  updatedAt DateTime @updatedAt
 }
 
 model Roles {

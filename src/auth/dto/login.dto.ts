@@ -1,4 +1,4 @@
-import { IsEmail, IsString, ValidateIf } from "class-validator";
+import { IsBoolean, IsOptional, IsString } from "class-validator";
 
 export class LoginDto {
   @IsString()
@@ -6,6 +6,10 @@ export class LoginDto {
 
   @IsString()
   password: string;
+
+  @IsBoolean()
+  @IsOptional()
+  rememberme: boolean;
 }
 
 export const LoginDtoSwagger = {
@@ -24,7 +28,13 @@ export const LoginDtoSwagger = {
         example: "Str0ng#Passw0rd",
         minLength: 8,
       },
+      rememberme: {
+        type: "boolean",
+        description: "make choose for",
+        example: true,
+        minLength: 8,
+      },
     },
-    required: ["emailOrUername", "password"],
+    required: ["emailOrUername", "password", "rememberme"],
   },
 };

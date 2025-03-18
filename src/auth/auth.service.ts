@@ -17,8 +17,6 @@ import { generateRandomNumberByLength } from "src/utils/generateRandomNumberByLe
 import { SignupAuthDto } from "./dto/auth.dto";
 import { LoginDto } from "./dto/login.dto";
 import { SignupStepTwo, SingupStepThree } from "./dto/signup.dto";
-import { Tokens } from "./types/token.types";
-import { use } from "passport";
 
 @Injectable()
 export class AuthService {
@@ -28,15 +26,15 @@ export class AuthService {
     private readonly nodeMailer: MailerService,
   ) {}
 
-  private async generateJWT(payload: any): Promise<Tokens> {
+  private async generateJWT(payload: any) {
     const [at, rt] = await Promise.all([
       this.jwt.signAsync(
         { ...payload },
-        { secret: process.env.ACT_JWTSECRET, expiresIn: 60 * 15 },
+        { secret: process.env.JWTSECRET, expiresIn: 60 * 30 },
       ),
       this.jwt.signAsync(
         { ...payload },
-        { secret: process.env.REFT_JWTSECRET, expiresIn: 60 * 60 * 24 * 7 },
+        { secret: process.env.JWTSECRET, expiresIn: 60 * 60 * 24 * 7 },
       ),
     ]);
 
@@ -223,13 +221,14 @@ export class AuthService {
 
   async login(body: LoginDto) {
     const { emailOrUsername, password } = body;
-
     let where;
-
     if (emailOrUsername.includes("@")) where = { email: emailOrUsername };
     else where = { username: emailOrUsername };
 
-    const user = await this.prisma.user.findUnique({ where });
+    const user = await this.prisma.user.findUnique({
+      where,
+      include: { UsersRoles: { include: { roles: true } } },
+    });
 
     if (!user) {
       throw new NotFoundException({
@@ -246,13 +245,33 @@ export class AuthService {
         message: "The username or password is incorrect.",
       });
     }
-    const token = await this.generateJWT({ userid: user.userId });
 
-    return {
-      success: true,
-      message: "Successful login",
-      tokens: token,
-    };
+    const roles = user.UsersRoles.map((item) => {
+      return item.roles.name;
+    });
+
+    const token = await this.generateJWT({ userid: user.userId, roles });
+
+    try {
+      const hashedRT = await this.hashData(token.refreshToken);
+
+      await this.prisma.hashedTokes.upsert({
+        where: { userid: user.userId },
+        create: { userid: user.userId, hashedRT },
+        update: { hashedRT },
+      });
+
+      return {
+        success: true,
+        message: "Successful login",
+        roles,
+        username: user.username,
+        email: user.email,
+        tokens: body.rememberme ? token.refreshToken : token.accessToken,
+      };
+    } catch (error) {
+      customInternalServerError();
+    }
   }
 
   async localSignup(dto: SignupAuthDto) {
@@ -307,11 +326,8 @@ export class AuthService {
     };
   }
 
-  async localSignin(): Promise<Tokens> {
+  async localSignin() {
     const data = this.generateJWT({ userid: "vsd" });
     return data;
   }
-
-  logOut() {}
-  refereshToken() {}
 }
