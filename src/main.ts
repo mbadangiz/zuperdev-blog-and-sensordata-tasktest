@@ -8,7 +8,13 @@ async function bootstrap() {
 
   app.useGlobalPipes(customValidationPipe());
   swaggerConfig(app);
-  await app.listen(process.env.PORT ?? 3000);
+
+  app.enableCors({
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+  });
+  await app.listen(3000, "0.0.0.0");
   console.log("Click to view the project document=> http://localhost:3000/api");
 }
 bootstrap();
