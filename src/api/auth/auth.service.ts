@@ -10,7 +10,7 @@ import {
 import { JwtService } from "@nestjs/jwt";
 import { compare, hash } from "bcrypt";
 import { VerificationMail } from "src/configs/mailTemplates.configs";
-import { MailerService } from "src/mailer/mailer.service";
+import { MailerService } from "src/api/mailer/mailer.service";
 import { PrismaService } from "src/prisma/prisma.service";
 import { customInternalServerError } from "src/utils/customInternalServerError.utils";
 import { generateRandomNumberByLength } from "src/utils/generateRandomNumberByLength";

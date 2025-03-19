@@ -14,6 +14,8 @@ export class ProfileService {
         bio: true,
         firstname: true,
         lastname: true,
+        createdAt: true,
+        updatedAt: true,
         location: {
           select: {
             address: true,
@@ -74,5 +76,6 @@ export class ProfileService {
   async updateProfile(req) {
     const userid = req.userid;
     const profile = await this.checkProfileExists(userid);
+    return profile;
   }
 }

@@ -1,13 +1,13 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";
-import { JwtModule, JwtService } from "@nestjs/jwt";
+import { AuthModule } from "./api/auth/auth.module";
+import { AwsUploadModule } from "./api/aws-upload/aws-upload.module";
+import { MailerModule } from "./api/mailer/mailer.module";
+import { ProfileModule } from "./api/profile/profile.module";
 import { AppController } from "./app.controller";
-import { AuthModule } from "./auth/auth.module";
 import { RolesGuard } from "./guard/roles.guard";
-import { MailerModule } from "./mailer/mailer.module";
 import { PrismaModule } from "./prisma/prisma.module";
-import { ProfileModule } from "./profile/profile.module";
 
 @Module({
   imports: [
@@ -16,6 +16,7 @@ import { ProfileModule } from "./profile/profile.module";
     PrismaModule,
     MailerModule,
     ProfileModule,
+    AwsUploadModule,
   ],
   controllers: [AppController],
   providers: [

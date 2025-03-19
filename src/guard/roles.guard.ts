@@ -8,7 +8,7 @@ import {
 import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
-import { User } from "src/auth/strategies/types";
+import { User } from "src/api/auth/strategies/types";
 import { ROLES_KEY } from "src/decorators/roles.decorator";
 
 @Injectable({ scope: Scope.REQUEST })
