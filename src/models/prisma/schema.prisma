@@ -85,7 +85,7 @@ model UploadedFiles {
   mimetype   String
   type       String
   size       Int
-  url        String   @db.Text
+  url        String   @db.Text @unique
   uploadDate DateTime @db.Date @default(now())
   updatedAt  DateTime @updatedAt
 }

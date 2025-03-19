@@ -19,3 +19,5 @@ export type ProfilesFlated = Omit<UserProfile, "location"> & {
   state: string | null;
   zipCode: string | null;
 };
+
+export type deleteAws = { id?: number; url?: string };

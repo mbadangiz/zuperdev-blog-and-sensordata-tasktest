@@ -19,6 +19,7 @@ export const UploadFileDtoSwagger = {
     required: ["filename"],
   },
 };
+
 export class UploadFileDto {
   @MinLength(5, { message: "The Minimum length of fileName is 5" })
   @MaxLength(100, { message: "The Maximum length of fileName is 100" })

@@ -12,6 +12,7 @@ import { v4 as uuidv4 } from "uuid";
 import { UploadFileDto } from "./dto/uploadfile.dto";
 import { customInternalServerError } from "src/utils/customInternalServerError.utils";
 import { PrismaService } from "src/prisma/prisma.service";
+import { deleteAws } from "src/types/types";
 
 @Injectable()
 export class AwsUploadService {
@@ -30,7 +31,7 @@ export class AwsUploadService {
     this.bucketName = process.env.LIARA_BUCKET_NAME || "mytestapp";
   }
 
-  async upload(file: Express.Multer.File) {
+  async uploadIntoBucket(file: Express.Multer.File) {
     const fileKey = `${uuidv4()}-${file.originalname.split(" ").join("-")}`;
 
     const uploadParams = {
@@ -41,7 +42,10 @@ export class AwsUploadService {
     };
     try {
       await this.s3.send(new PutObjectCommand(uploadParams));
-      return `https://storage.c2.liara.space/${this.bucketName}/${fileKey}`;
+      return {
+        success: true,
+        url: `https://storage.c2.liara.space/${this.bucketName}/${fileKey}`,
+      };
     } catch (error) {
       throw new InternalServerErrorException({
         success: false,
@@ -49,29 +53,14 @@ export class AwsUploadService {
       });
     }
   }
-
-  async deleteFileFromList(fileBukectKey: string) {
-    const params = {
-      Bucket: process.env.LIARA_BUCKET_NAME,
-      Key: fileBukectKey,
-    };
-
-    try {
-      await this.s3.send(new DeleteObjectCommand(params));
-      console.log("File deleted successfully");
-    } catch (error) {
-      throw new Error(`Error uploading file: ${error.message}`);
-    }
-  }
-
-  async uploadController(file: Express.Multer.File, body: UploadFileDto) {
+  async upload(file: Express.Multer.File, body: UploadFileDto) {
     if (!file) {
       throw new NotFoundException({
         success: false,
         message: "File is Not Found!",
       });
     }
-    const fileUrl = await this.upload(file);
+    const fileUrl = await this.uploadIntoBucket(file);
 
     const fileType =
       file.originalname.split(".")[file.originalname.split(".").length - 1];
@@ -81,7 +70,7 @@ export class AwsUploadService {
       mimetype: file.mimetype,
       type: fileType,
       size: file.size,
-      url: fileUrl,
+      url: fileUrl.url,
     };
 
     try {
@@ -97,6 +86,55 @@ export class AwsUploadService {
         url: data.url,
       };
     } catch (error) {
+      customInternalServerError();
+    }
+  }
+
+  async deleteFromBucket(fileBukectKey: string) {
+    const params = {
+      Bucket: process.env.LIARA_BUCKET_NAME,
+      Key: fileBukectKey,
+    };
+
+    try {
+      await this.s3.send(new DeleteObjectCommand(params));
+      return { success: true, message: "file Deleted From Bucket" };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException({
+        success: false,
+        message: `Error deleting file: ${error.message}`,
+      });
+    }
+  }
+
+  async delete(fileBukectKey: string, body: deleteAws) {
+    const delFromBkt = await this.deleteFromBucket(fileBukectKey);
+
+    if (!delFromBkt.success) {
+      throw new InternalServerErrorException({
+        success: false,
+        message: `Error During Delete deleting `,
+      });
+    }
+
+    try {
+      let where;
+
+      if (body.id) {
+        where = { id: body.id };
+      } else if (body.url) {
+        where = { url: body.url };
+      } else {
+        throw new Error("At least one of 'id' or 'url' must be provided.");
+      }
+
+      await this.prisma.uploadedFiles.delete({
+        where,
+      });
+      return { success: true, message: "File has been deleted Successfully." };
+    } catch (error) {
+      console.log(error);
       customInternalServerError();
     }
   }
