@@ -19,18 +19,16 @@ import {
 import { ProfileService } from "./profile.service";
 
 @Controller("profile")
+@useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL, UserRole.VIEWER)
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   @Get()
-  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL, UserRole.VIEWER)
   getProfile(@Req() req: Request) {
-    console.log(req.user);
     return this.profileService.getProfile(req.user);
   }
 
   @Put("update")
-  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL, UserRole.VIEWER)
   @UseInterceptors(FileInterceptor("file"))
   @ApiConsumes("multipart/form-data")
   @ApiBody(UpdateProfileDtoSwagger)

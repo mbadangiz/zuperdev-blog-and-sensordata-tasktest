@@ -20,23 +20,19 @@ export class RefreshTokenStrategies extends PassportStrategy(
   }
 
   async validate(req: Request, payload: any): Promise<User> {
-    console.log('RefreshTokenStrategies validate - Payload:', payload);
-    
     if (!payload) {
-      throw new UnauthorizedException('Invalid token payload');
+      throw new UnauthorizedException("Invalid token payload");
     }
 
     if (!payload.userid || !payload.roles) {
-      console.log('Missing fields in payload. Payload:', payload);
-      throw new UnauthorizedException('Token payload missing required fields');
+      throw new UnauthorizedException("Token payload missing required fields");
     }
 
     const user: User = {
       userid: payload.userid,
-      roles: payload.roles
+      roles: payload.roles,
     };
 
-    console.log('RefreshTokenStrategies validate - Created user:', user);
     return user;
   }
 }
