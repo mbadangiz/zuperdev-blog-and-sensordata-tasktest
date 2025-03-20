@@ -3,44 +3,44 @@ import { IsOptional, IsString, MaxLength, MinLength } from "class-validator";
 export class UpdateProfileDto {
   @IsOptional()
   @IsString()
-  @MaxLength(50, { message: "The Maximum Lenght is 50" })
+  @MaxLength(50, { message: "The Maximum Length is 50" })
   firstname?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(50, { message: "The Maximum Lenght is 50" })
+  @MaxLength(50, { message: "The Maximum Length is 50" })
   lastname?: string;
 
   @IsOptional()
   @IsString()
-  @MinLength(30, { message: "The Minimum Lenght is 30" })
-  @MaxLength(150, { message: "The Maximum Lenght is 150" })
+  @MinLength(30, { message: "The Minimum Length is 30" })
+  @MaxLength(150, { message: "The Maximum Length is 150" })
   bio?: string;
 
   @IsOptional()
   @IsString()
-  @MinLength(15, { message: "The Minimum Lenght is 30" })
-  @MaxLength(100, { message: "The Maximum Lenght is 100" })
+  @MinLength(15, { message: "The Minimum Length is 30" })
+  @MaxLength(100, { message: "The Maximum Length is 100" })
   address?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(30, { message: "The Maximum Lenght is 30" })
+  @MaxLength(30, { message: "The Maximum Length is 30" })
   city?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(30, { message: "The Maximum Lenght is 30" })
+  @MaxLength(30, { message: "The Maximum Length is 30" })
   state?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(30, { message: "The Maximum Lenght is 30" })
+  @MaxLength(30, { message: "The Maximum Length is 30" })
   country?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(20, { message: "The Maximum Lenght is 20" })
+  @MaxLength(20, { message: "The Maximum Length is 20" })
   zipCode?: string;
 }
 

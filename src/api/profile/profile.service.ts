@@ -4,10 +4,10 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
-import { customInternalServerError } from "src/utils/customInternalServerError.utils";
-import { UpdateProfileDto } from "./dto/updateProfile.dto";
-import { AwsUploadService } from "../aws-upload/aws-upload.service";
 import { In_userProfile } from "src/types/interface";
+import { customInternalServerError } from "src/utils/customInternalServerError.utils";
+import { AwsUploadService } from "../aws-upload/aws-upload.service";
+import { UpdateProfileDto } from "./dto/updateProfile.dto";
 
 @Injectable()
 export class ProfileService {
@@ -108,7 +108,7 @@ export class ProfileService {
         if (!delPrevAvatar?.success) {
           throw new InternalServerErrorException({
             success: false,
-            message: "Changig Profile Image is fail.",
+            message: "Changing Profile Image failed.",
           });
         }
       }
@@ -120,7 +120,7 @@ export class ProfileService {
     }
 
     const profileData = {
-      avatar: url,
+      avatar: url || undefined,
       bio: body.bio,
       firstname: body.firstname,
       lastname: body.lastname,
@@ -149,25 +149,39 @@ export class ProfileService {
         select: this.selectedDataProfile,
       });
 
-      const checkPercent = this.profilePercentage(updateProfile);
+      const beforeUpdate = this.profilePercentage(profile);
+      const afterUpdate = this.profilePercentage(updateProfile);
 
-      if (checkPercent < 75) {
-        const addRoleToUser = await this.prisma.usersRoles.create({
-          data: { roleId: 5, userId: userId },
-          include: { roles: true },
+      if (afterUpdate >= 75 && beforeUpdate < 75) {
+        const existingRole = await this.prisma.usersRoles.findFirst({
+          where: {
+            userId: userId,
+            roles: {
+              name: "ORDINAL",
+            },
+          },
         });
 
-        return {
-          success: true,
-          message:
-            "Profile Updated Successfully and User now have permision to use application",
-          profile: updateProfile,
-        };
+        if (!existingRole) {
+          await this.prisma.usersRoles.create({
+            data: {
+              roleId: 5,
+              userId: userId,
+            },
+          });
+
+          return {
+            success: true,
+            message:
+              "Profile updated successfully. You've been granted Ordinal User status!",
+            profile: updateProfile,
+          };
+        }
       }
 
       return {
         success: true,
-        message: "Profile Updated Successfully.",
+        message: "Profile updated successfully.",
         profile: updateProfile,
       };
     } catch (error) {

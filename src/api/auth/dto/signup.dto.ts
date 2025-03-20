@@ -4,6 +4,7 @@ import {
   Length,
   MaxLength,
   MinLength,
+  IsString,
 } from "class-validator";
 
 export const SignupStepOneDtoSwagger = {
@@ -24,8 +25,8 @@ export const SignupStepOneDtoSwagger = {
 
 export class SignupStepOne {
   @IsEmail()
-  @MinLength(5, { message: "The Minimum Lenght is 5" })
-  @MaxLength(80, { message: "The Maximum Lenght is 80" })
+  @MinLength(5, { message: "The Minimum Length is 5" })
+  @MaxLength(80, { message: "The Maximum Length is 80" })
   email: string;
 }
 
@@ -52,12 +53,14 @@ export const SignupStepTwoDtoSwagger = {
 };
 
 export class SignupStepTwo {
-  @Length(5, 5, { message: "Username must be exactly 5 characters long" })
+  @IsString()
+  @MinLength(5, { message: "The Minimum Length is 5" })
+  @MaxLength(80, { message: "The Maximum Length is 80" })
   verificationCode: string;
 
   @IsEmail()
-  @MinLength(5, { message: "The Minimum Lenght is 5" })
-  @MaxLength(80, { message: "The Maximum Lenght is 80" })
+  @MinLength(5, { message: "The Minimum Length is 5" })
+  @MaxLength(80, { message: "The Maximum Length is 80" })
   email: string;
 }
 

@@ -209,7 +209,7 @@ export class AuthService {
       const tokens = await this.generateJWT({ userid: createUser.userId });
 
       return {
-        suceess: true,
+        success: true,
         message: "The user has been created successfully.",
         userid: createUser.userId,
         token: tokens.refreshToken,
