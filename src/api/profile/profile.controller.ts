@@ -25,6 +25,7 @@ export class ProfileController {
   @Get()
   @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL, UserRole.VIEWER)
   getProfile(@Req() req: Request) {
+    console.log(req.user);
     return this.profileService.getProfile(req.user);
   }
 

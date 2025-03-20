@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { User } from "./types";
@@ -20,6 +20,23 @@ export class RefreshTokenStrategies extends PassportStrategy(
   }
 
   async validate(req: Request, payload: any): Promise<User> {
-    return { userid: payload.userid, roles: payload.roles };
+    console.log('RefreshTokenStrategies validate - Payload:', payload);
+    
+    if (!payload) {
+      throw new UnauthorizedException('Invalid token payload');
+    }
+
+    if (!payload.userid || !payload.roles) {
+      console.log('Missing fields in payload. Payload:', payload);
+      throw new UnauthorizedException('Token payload missing required fields');
+    }
+
+    const user: User = {
+      userid: payload.userid,
+      roles: payload.roles
+    };
+
+    console.log('RefreshTokenStrategies validate - Created user:', user);
+    return user;
   }
 }
