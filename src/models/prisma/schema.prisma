@@ -77,6 +77,8 @@ model UsersRoles {
   user   User   @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade, name: "usersrole-to-users")
   roleId Int
   roles  Roles  @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: Cascade, name: "usersrole-to-roles")
+
+  @@unique([userId, roleId])
 }
 
 model UploadedFiles {
@@ -85,7 +87,7 @@ model UploadedFiles {
   mimetype   String
   type       String
   size       Int
-  url        String   @db.Text @unique
-  uploadDate DateTime @db.Date @default(now())
+  url        String   @unique @db.Text
+  uploadDate DateTime @default(now()) @db.Date
   updatedAt  DateTime @updatedAt
 }

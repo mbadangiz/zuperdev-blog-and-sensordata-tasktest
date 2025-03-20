@@ -3,8 +3,7 @@ import { Post, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { AwsUploadService } from "./aws-upload.service";
 import { ApiBody, ApiConsumes } from "@nestjs/swagger";
-import { Auth } from "src/decorators/auth.decorators";
-import { Roles } from "src/decorators/roles.decorator";
+import { useRoles } from "src/decorators/useRoles.decorators";
 import { UserRole } from "src/types/enum";
 import { UploadFileDto, UploadFileDtoSwagger } from "./dto/uploadfile.dto";
 import { DeleteFileDto, DeleteFileDtoSwagger } from "./dto/deletefile.dto";
@@ -14,8 +13,7 @@ export class AwsUploadController {
   constructor(private readonly AwsUploadService: AwsUploadService) {}
 
   @Post()
-  @Auth("jwt-refresh")
-  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  @useRoles(UserRole.ADMIN, UserRole.EDITOR)
   @UseInterceptors(FileInterceptor("file"))
   @ApiConsumes("multipart/form-data")
   @ApiBody(UploadFileDtoSwagger)
@@ -27,8 +25,7 @@ export class AwsUploadController {
   }
 
   @Delete("delete")
-  @Auth("jwt-refresh")
-  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  @useRoles(UserRole.ADMIN, UserRole.EDITOR)
   @ApiBody(DeleteFileDtoSwagger)
   async deleteFile(@Body() body: DeleteFileDto) {
     const data = body.idOrUrl.includes("https://")

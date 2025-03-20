@@ -15,6 +15,7 @@ export class RefreshTokenStrategies extends PassportStrategy(
         process.env.REFT_JWTSECRET ||
         "L1uT6mHvdsppo9bY3sJgK0wFy7xZ2aQdE4rV8p9uT2cas",
       passReqToCallback: true,
+      ignoreExpiration: false,
     });
   }
 

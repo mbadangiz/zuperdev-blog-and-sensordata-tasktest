@@ -7,6 +7,7 @@ import { PrismaService } from "src/prisma/prisma.service";
 import { customInternalServerError } from "src/utils/customInternalServerError.utils";
 import { UpdateProfileDto } from "./dto/updateProfile.dto";
 import { AwsUploadService } from "../aws-upload/aws-upload.service";
+import { In_userProfile } from "src/types/interface";
 
 @Injectable()
 export class ProfileService {
@@ -49,25 +50,30 @@ export class ProfileService {
     return userProfile;
   }
 
+  private profilePercentage(userProfile: In_userProfile) {
+    const profilesFlated = { ...userProfile, ...userProfile.location };
+    const { location, createdAt, updatedAt, ...profileWithoutLocation } =
+      profilesFlated;
+    const profileProperties = Object.keys(profileWithoutLocation);
+
+    const filledData: (string | number | boolean)[] = [];
+    profileProperties.forEach((item) => {
+      if (profilesFlated[item]) {
+        filledData.push(profilesFlated[item]);
+      }
+    });
+
+    const profileCompletionPercentage = Math.floor(
+      (filledData.length / profileProperties.length) * 100,
+    );
+    return profileCompletionPercentage;
+  }
+
   async getProfile(req) {
     try {
       const userId = req.userid;
       const userProfile = await this.checkProfileExists(userId);
-
-      const profilesFlated = { ...userProfile, ...userProfile.location };
-      const { location, ...profileWithoutLocation } = profilesFlated;
-      const profileProperties = Object.keys(profileWithoutLocation);
-
-      const filledData: (string | number | boolean)[] = [];
-      profileProperties.forEach((item) => {
-        if (profilesFlated[item]) {
-          filledData.push(profilesFlated[item]);
-        }
-      });
-
-      const profileCompletionPercentage = Math.floor(
-        (filledData.length / profileProperties.length) * 100,
-      );
+      const profileCompletionPercentage = this.profilePercentage(userProfile);
 
       return {
         success: true,
@@ -143,9 +149,25 @@ export class ProfileService {
         select: this.selectedDataProfile,
       });
 
+      const checkPercent = this.profilePercentage(updateProfile);
+
+      if (checkPercent < 75) {
+        const addRoleToUser = await this.prisma.usersRoles.create({
+          data: { roleId: 5, userId: userId },
+          include: { roles: true },
+        });
+
+        return {
+          success: true,
+          message:
+            "Profile Updated Successfully and User now have permision to use application",
+          profile: updateProfile,
+        };
+      }
+
       return {
-        success: false,
-        message: "",
+        success: true,
+        message: "Profile Updated Successfully.",
         profile: updateProfile,
       };
     } catch (error) {

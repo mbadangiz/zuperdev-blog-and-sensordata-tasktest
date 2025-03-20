@@ -7,32 +7,29 @@ import {
   UploadedFile,
   UseInterceptors,
 } from "@nestjs/common";
-import { Request } from "express";
-import { Auth } from "src/decorators/auth.decorators";
-import { ProfileService } from "./profile.service";
-import { Roles } from "src/decorators/roles.decorator";
-import { UserRole } from "src/types/enum";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { ApiBody, ApiConsumes } from "@nestjs/swagger";
+import { Request } from "express";
+import { useRoles } from "src/decorators/useRoles.decorators";
+import { UserRole } from "src/types/enum";
 import {
   UpdateProfileDto,
   UpdateProfileDtoSwagger,
 } from "./dto/updateProfile.dto";
-import { FileInterceptor } from "@nestjs/platform-express";
+import { ProfileService } from "./profile.service";
 
 @Controller("profile")
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   @Get()
-  @Auth("jwt-refresh")
-  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL, UserRole.VIEWER)
+  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL, UserRole.VIEWER)
   getProfile(@Req() req: Request) {
     return this.profileService.getProfile(req.user);
   }
 
   @Put("update")
-  @Auth("jwt-refresh")
-  @Roles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL, UserRole.VIEWER)
+  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL, UserRole.VIEWER)
   @UseInterceptors(FileInterceptor("file"))
   @ApiConsumes("multipart/form-data")
   @ApiBody(UpdateProfileDtoSwagger)

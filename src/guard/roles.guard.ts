@@ -3,20 +3,15 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
-  Scope,
+       Scope,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { JwtService } from "@nestjs/jwt";
-import { Request } from "express";
-import { User } from "src/api/auth/strategies/types";
 import { ROLES_KEY } from "src/decorators/roles.decorator";
 
 @Injectable({ scope: Scope.REQUEST })
 export class RolesGuard implements CanActivate {
-  constructor(
-    private reflector: Reflector,
-    private jwtService: JwtService,
-  ) {}
+  constructor(private reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRoles = this.reflector.getAllAndOverride<string[]>(
@@ -28,27 +23,19 @@ export class RolesGuard implements CanActivate {
       return true;
     }
 
-    const token = context
-      .switchToHttp()
-      .getRequest<Request>()
-      .get("authorization")
-      ?.split(" ")
-      .pop();
-
-    const decodedToken = await this.jwtService.decode(token!);
-
-    if (!decodedToken || !decodedToken.roles) {
-      throw new ForbiddenException("Access denied");
+    const request = context.switchToHttp().getRequest();
+    const user = request.user; 
+    if (!user) {
+      throw new UnauthorizedException("Authentication required");
     }
-
-    const hasRole = requiredRoles.some((role) =>
-      decodedToken.roles.includes(role),
-    );
-
+ 
+    if (!user.roles) {
+      throw new UnauthorizedException("User roles not found in token");
+    }
+ 
+    const hasRole = requiredRoles.some((role) => user.roles.includes(role));
     if (!hasRole) {
-      throw new ForbiddenException(
-        "You do not have permission to access this resource",
-      );
+      throw new ForbiddenException("You do not have permission to access this resource");
     }
 
     return true;
