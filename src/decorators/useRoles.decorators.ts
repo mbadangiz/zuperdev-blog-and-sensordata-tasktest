@@ -7,7 +7,7 @@ import { RolesGuard } from "src/guard/roles.guard";
 export function useRoles(...roles: string[]) {
   return applyDecorators(
     ApiBearerAuth(),
-    UseGuards(JwtAuthGuard), 
+    UseGuards(JwtAuthGuard),
     Roles(...roles),
     UseGuards(RolesGuard),
   );

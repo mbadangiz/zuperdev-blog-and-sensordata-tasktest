@@ -3,8 +3,8 @@ import { INestApplication } from "@nestjs/common";
 
 export function swaggerConfig(app: INestApplication) {
   const config = new DocumentBuilder()
-    .setTitle("Form Generator")
-    .setDescription("API Documentation for Form Generator")
+    .setTitle("Blog App")
+    .setDescription("API Documentation for BlogApp")
     .setVersion("1.0")
     .addBearerAuth()
     .build();
