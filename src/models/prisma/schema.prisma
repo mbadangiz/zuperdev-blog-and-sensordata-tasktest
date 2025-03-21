@@ -28,6 +28,7 @@ model User {
   profile     Profile?     @relation("profile-to-users")
   hashedTokes HashedTokes?
   UsersRoles  UsersRoles[] @relation("usersrole-to-users")
+  SensorData  SensorData[]
 
   @@index([id])
 }
@@ -90,4 +91,23 @@ model UploadedFiles {
   url        String   @unique @db.Text
   uploadDate DateTime @default(now()) @db.Date
   updatedAt  DateTime @updatedAt
+}
+
+enum SensorDataStatus {
+  OPEN
+  CLOSED
+}
+
+model SensorData {
+  id          Int      @id @default(autoincrement())
+  userId      String    @db.VarChar(50)
+  user        User     @relation(fields: [userId], references: [userId])
+  sensorId    String   @db.VarChar(50)
+  deviceType  String   @db.VarChar(50)
+  location    String   @db.VarChar(50)
+  time        DateTime @default(now())
+  sashHeight  Int
+  status      SensorDataStatus
+  temperature Float
+  humidity    Int
 }

@@ -6,6 +6,7 @@ import { MailerModule } from "./api/mailer/mailer.module";
 import { ProfileModule } from "./api/profile/profile.module";
 import { AppController } from "./app.controller";
 import { PrismaModule } from "./prisma/prisma.module";
+import { SensorDataModule } from "./api/sensor-data/sensor-data.module";
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { PrismaModule } from "./prisma/prisma.module";
     MailerModule,
     ProfileModule,
     AwsUploadModule,
+    SensorDataModule,
   ],
   controllers: [AppController],
   providers: [],
