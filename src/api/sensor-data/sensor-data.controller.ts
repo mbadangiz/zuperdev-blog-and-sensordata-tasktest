@@ -5,7 +5,8 @@ import { UserRole } from "src/types/enum";
 import { ApiBody, ApiQuery } from "@nestjs/swagger";
 import { SensorDataService } from "./sensor-data.service";
 import { Request } from "express";
-import { SearchQueryDto } from "./dto/get-all-data.dto";
+import { SearchQueryDto, searchQuerySwagger } from "./dto/get-all-data.dto";
+import { CustomApiQuerySwagger } from "src/decorators/customApiQuerySwagger.decorator";
 
 @Controller("sensor-data")
 @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL, UserRole.VIEWER)
@@ -19,24 +20,7 @@ export class SensorDataController {
   }
 
   @Get()
-  @ApiQuery({
-    name: "search",
-    required: false,
-    type: String,
-    description: "Search query",
-  })
-  @ApiQuery({
-    name: "page",
-    required: false,
-    type: Number,
-    description: "Page number",
-  })
-  @ApiQuery({
-    name: "limit",
-    required: false,
-    type: Number,
-    description: "Limit of items per page",
-  })
+  @CustomApiQuerySwagger(searchQuerySwagger)
   getAllSensorData(@Query() query: SearchQueryDto) {
     return this.SensorDataService.getAllDataBySearchAndFilter(query);
   }
