@@ -9,11 +9,11 @@ import { UploadFileDto, UploadFileDtoSwagger } from "./dto/uploadfile.dto";
 import { DeleteFileDto, DeleteFileDtoSwagger } from "./dto/deletefile.dto";
 
 @Controller("aws-upload")
+@useRoles(UserRole.ADMIN, UserRole.EDITOR)
 export class AwsUploadController {
   constructor(private readonly AwsUploadService: AwsUploadService) {}
 
   @Post()
-  @useRoles(UserRole.ADMIN, UserRole.EDITOR)
   @UseInterceptors(FileInterceptor("file"))
   @ApiConsumes("multipart/form-data")
   @ApiBody(UploadFileDtoSwagger)
@@ -25,7 +25,6 @@ export class AwsUploadController {
   }
 
   @Delete("delete")
-  @useRoles(UserRole.ADMIN, UserRole.EDITOR)
   @ApiBody(DeleteFileDtoSwagger)
   async deleteFile(@Body() body: DeleteFileDto) {
     const data = body.idOrUrl.includes("https://")

@@ -123,6 +123,7 @@ export class AuthService {
         message:
           "An email containing the activation code has been sent to you. Please check your email.",
         nextStep: "Verify activation code",
+        otpNum: randomNumber,
       };
     } catch (error) {
       return error;
