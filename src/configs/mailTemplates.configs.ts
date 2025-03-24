@@ -65,8 +65,8 @@ export function VerificationMail(code: string) {
   </head>
   <body>
     <div class="container">
-      <h1 class="title">EasyForm</h1>
-      <p class="subtitle">make your form easy as possible</p>
+      <h1 class="title">Blog App</h1>
+      <p class="subtitle">make your blogs easy as possible</p>
       <p class="verification-text">Your Email Verification Code</p>
       <div class="code-box">
         <p class="code">${code}</p>

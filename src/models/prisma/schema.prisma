@@ -29,6 +29,10 @@ model User {
   hashedTokes HashedTokes?
   UsersRoles  UsersRoles[] @relation("usersrole-to-users")
   SensorData  SensorData[]
+  blogs       Blog[]       @relation("blog-to-user")
+  BlogsRates  BlogsRates[] @relation("blogsRate-to-user")
+  BlogsLikes  BlogsLikes[] @relation("blogsLikes-to-user")
+  Comments    Comments[]   @relation("commets-to-user")
 
   @@index([id])
 }
@@ -99,15 +103,99 @@ enum SensorDataStatus {
 }
 
 model SensorData {
-  id          Int      @id @default(autoincrement())
-  userId      String    @db.VarChar(50)
-  user        User     @relation(fields: [userId], references: [userId])
-  sensorId    String   @db.VarChar(50)
-  deviceType  String   @db.VarChar(50)
-  location    String   @db.VarChar(50)
-  time        DateTime @default(now())
+  id          Int              @id @default(autoincrement())
+  userId      String           @db.VarChar(50)
+  user        User             @relation(fields: [userId], references: [userId])
+  sensorId    String           @db.VarChar(50)
+  deviceType  String           @db.VarChar(50)
+  location    String           @db.VarChar(50)
+  time        DateTime         @default(now())
   sashHeight  Int
   status      SensorDataStatus
   temperature Float
   humidity    Int
+}
+
+enum BlogStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Blog {
+  id          Int                  @default(autoincrement())
+  blogId      String               @id @default(uuid()) @db.VarChar(50)
+  authourId   String               @db.VarChar(50)
+  user        User                 @relation(fields: [authourId], references: [userId], onDelete: Cascade, onUpdate: Cascade, name: "blog-to-user")
+  title       String               @db.VarChar(150)
+  content     String               @db.Text
+  image       String               @db.Text
+  status      BlogStatus           @default(PUBLISHED)
+  publishedAt DateTime             @default(now()) @db.Date
+  updatedAt   DateTime             @updatedAt
+  averageRate Float                @default(0)
+  totalLikes  Int                  @default(0)
+  seoTitle    String?              @db.VarChar(150)
+  seoContent  String?              @db.VarChar(150)
+  categories  BlogCategoriesList[] @relation("blogsCate-to-blog")
+  rates       BlogsRates[]         @relation("blogsRate-to-blog")
+  likes       BlogsLikes[]         @relation("blogsLikes-to-blog")
+  Comments    Comments[]           @relation("commets-to-blog")
+
+  @@index([id])
+}
+
+model BlogsRates {
+  id     Int    @id @default(autoincrement())
+  userid String @db.VarChar(50)
+  user   User   @relation(fields: [userid], references: [userId], onDelete: Cascade, onUpdate: Cascade, name: "blogsRate-to-user")
+  blogId String @db.VarChar(50)
+  blog   Blog   @relation(fields: [blogId], references: [blogId], onDelete: Cascade, onUpdate: Cascade, name: "blogsRate-to-blog")
+  rate   Float
+
+  @@unique([blogId, userid])
+}
+
+model BlogsLikes {
+  id     Int    @id @default(autoincrement())
+  userid String @db.VarChar(50)
+  user   User   @relation(fields: [userid], references: [userId], onDelete: Cascade, onUpdate: Cascade, name: "blogsLikes-to-user")
+  blogId String @db.VarChar(50)
+  blog   Blog   @relation(fields: [blogId], references: [blogId], onDelete: Cascade, onUpdate: Cascade, name: "blogsLikes-to-blog")
+
+  @@unique([blogId, userid])
+}
+
+model BlogCategories {
+  id           Int                  @id @default(autoincrement())
+  name         String               @db.VarChar(50)
+  description  String               @db.VarChar(100)
+  categoryList BlogCategoriesList[] @relation("blogsCate-to-cate")
+}
+
+model BlogCategoriesList {
+  id       Int            @id @default(autoincrement())
+  blogId   String         @db.VarChar(50)
+  blog     Blog           @relation(fields: [blogId], references: [blogId], onDelete: Cascade, onUpdate: Cascade, name: "blogsCate-to-blog")
+  cateId   Int
+  category BlogCategories @relation(fields: [cateId], references: [id], onDelete: Cascade, onUpdate: Cascade, name: "blogsCate-to-cate")
+}
+
+model Comments {
+  id        Int        @default(autoincrement())
+  commentId String     @id @default(uuid()) @db.VarChar(50)
+  content   String     @db.Text
+  userId    String     @db.VarChar(50)
+  user      User       @relation(fields: [userId], references: [userId], onDelete: Cascade, onUpdate: Cascade, name: "commets-to-user")
+  blogId    String     @db.VarChar(50)
+  blog      Blog       @relation(fields: [blogId], references: [blogId], onDelete: Cascade, onUpdate: Cascade, name: "commets-to-blog")
+  parentId  String?    @db.VarChar(50)
+  parent    Comments?  @relation("CommentToParent", fields: [parentId], references: [commentId])
+  replies   Comments[] @relation("CommentToParent")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([blogId])
+  @@index([id])
 }

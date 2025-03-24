@@ -7,6 +7,7 @@ import { ProfileModule } from "./api/profile/profile.module";
 import { AppController } from "./app.controller";
 import { PrismaModule } from "./prisma/prisma.module";
 import { SensorDataModule } from "./api/sensor-data/sensor-data.module";
+import { BlogModule } from "./api/blog/blog.module";
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { SensorDataModule } from "./api/sensor-data/sensor-data.module";
     ProfileModule,
     AwsUploadModule,
     SensorDataModule,
+    BlogModule,
   ],
   controllers: [AppController],
   providers: [],

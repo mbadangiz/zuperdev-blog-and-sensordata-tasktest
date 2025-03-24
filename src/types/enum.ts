@@ -9,3 +9,8 @@ export enum SensorDataStatus {
   OPEN = "OPEN",
   CLOSED = "CLOSED",
 }
+export enum BlogStatus {
+  DRAFT = "DRAFT",
+  PUBLISHED = "PUBLISHED",
+  ARCHIVED = "ARCHIVED",
+}
