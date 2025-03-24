@@ -1,6 +1,6 @@
-import { IsOptional, IsInt, IsString } from "class-validator";
+import { IsOptional, IsInt, IsString, Min, Max } from "class-validator";
 import { Type } from "class-transformer";
-import { ApiQueryOptions } from "@nestjs/swagger";
+import { ApiQueryOptions, ApiProperty } from "@nestjs/swagger";
 
 export const SearchQueryDtoForBlogSwagger: ApiQueryOptions[] = [
   {
@@ -36,20 +36,47 @@ export const SearchQueryDtoForBlogSwagger: ApiQueryOptions[] = [
 export class SearchQueryDtoForBlog {
   @IsOptional()
   @IsString()
+  @ApiProperty({
+    required: false,
+    description: "Search in blog title and content",
+    example: "technology",
+  })
   search?: string;
 
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  page?: number;
+  @Min(1)
+  @ApiProperty({
+    required: false,
+    description: "Page number (starts from 1)",
+    default: 1,
+    minimum: 1,
+  })
+  page?: number = 1;
 
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  limit?: number;
+  @Min(1)
+  @Max(100)
+  @ApiProperty({
+    required: false,
+    description: "Number of items per page",
+    default: 10,
+    minimum: 1,
+    maximum: 100,
+  })
+  limit?: number = 10;
 
   @IsOptional()
   @Type(() => Number)
   @IsInt({ each: true })
+  @ApiProperty({
+    required: false,
+    description: "Filter by category IDs",
+    type: [Number],
+    example: [1, 2],
+  })
   categoryId?: number[];
 }

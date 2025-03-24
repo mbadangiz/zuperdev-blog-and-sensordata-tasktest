@@ -326,7 +326,8 @@ export class BlogService {
       const { search, page = 1, limit = 10, categoryId } = query;
       const skip = (page - 1) * limit;
 
-      const where: Prisma.BlogWhereInput = {
+      // Build where clause
+      const where = {
         ...(search && {
           OR: [
             { title: { contains: search, mode: Prisma.QueryMode.insensitive } },
@@ -339,21 +340,48 @@ export class BlogService {
           categories: {
             some: {
               cateId: {
-                in: categoryId,
+                in: Array.isArray(categoryId) ? categoryId : [categoryId],
               },
             },
           },
         }),
       };
 
+      // Select only necessary fields for list view
+      const select = {
+        blogId: true,
+        title: true,
+        content: true,
+        status: true,
+        image: true,
+        averageRate: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            likes: true,
+            rates: true,
+          },
+        },
+        categories: {
+          select: {
+            cateId: true,
+            category: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      };
+
+      // Execute queries in parallel
       const [blogs, total] = await Promise.all([
         this.prisma.blog.findMany({
           where,
+          select,
           skip,
           take: limit,
-          include: {
-            categories: true,
-          },
           orderBy: {
             blogId: "desc",
           },
@@ -361,9 +389,21 @@ export class BlogService {
         this.prisma.blog.count({ where }),
       ]);
 
+      // Transform the response to remove nested structures
+      const transformedBlogs = blogs.map((blog) => ({
+        ...blog,
+        categories: blog.categories.map((cat) => ({
+          id: cat.cateId,
+          name: cat.category.name,
+        })),
+        totalLikes: blog._count.likes,
+        totalRates: blog._count.rates,
+        _count: undefined,
+      }));
+
       return {
         success: true,
-        data: blogs,
+        data: transformedBlogs,
         pagination: {
           total,
           page,
@@ -372,7 +412,7 @@ export class BlogService {
         },
       };
     } catch (error) {
-      console.error(error);
+      console.error("Blog list error:", error);
       throw customInternalServerError();
     }
   }
