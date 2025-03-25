@@ -9,18 +9,12 @@ import {
   Query,
   Req,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiConsumes,
-  ApiOperation,
-  ApiParam,
-} from "@nestjs/swagger";
+import { ApiBody, ApiConsumes, ApiOperation, ApiParam } from "@nestjs/swagger";
 import { Request } from "express";
+import { CustomApiQuerySwagger } from "src/decorators/customApiQuerySwagger.decorator";
 import { useRoles } from "src/decorators/useRoles.decorators";
 import { UserRole } from "src/types/enum";
 import { BlogService } from "./blog.service";
@@ -29,13 +23,11 @@ import {
   AddUpdateRateDtoSwagger,
 } from "./dto/add-update-rate.dto";
 import { CreateBlogDto, CreateBlogDtoSwagger } from "./dto/create-blog.dto";
-import { UpdateBlogDto, UpdateBlogDtoSwagger } from "./dto/update-blog.dto";
-import { CustomApiQuerySwagger } from "src/decorators/customApiQuerySwagger.decorator";
 import {
   SearchQueryDtoForBlog,
   SearchQueryDtoForBlogSwagger,
 } from "./dto/get-all-blog.dto";
-import { OptionalJwtAuthGuard } from "src/guard/optional-jwt-auth.guard";
+import { UpdateBlogDto, UpdateBlogDtoSwagger } from "./dto/update-blog.dto";
 
 @Controller("blog")
 export class BlogController {

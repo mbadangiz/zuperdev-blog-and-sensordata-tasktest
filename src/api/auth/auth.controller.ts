@@ -1,4 +1,11 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+} from "@nestjs/common";
 import { ApiBody } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { SignupAuthDto, SignupAuthDtoSwagger } from "./dto/auth.dto";
@@ -11,10 +18,18 @@ import {
   SingupStepThree,
   SingupStepThreeDtoSwagger,
 } from "./dto/signup.dto";
+import { useRoles } from "src/decorators/useRoles.decorators";
+import { UserRole } from "src/types/enum";
 
 @Controller("auth")
 export class AuthController {
   constructor(private readonly AuthService: AuthService) {}
+
+  @Get("verify-token")
+  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL, UserRole.VIEWER)
+  verifyUserToken() {
+    return "true";
+  }
 
   @Post("local/signup")
   @ApiBody(SignupAuthDtoSwagger)

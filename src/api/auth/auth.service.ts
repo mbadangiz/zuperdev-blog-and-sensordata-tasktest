@@ -109,14 +109,14 @@ export class AuthService {
           message: "Failed to create OTP record.",
         });
 
-      const emailHtml = VerificationMail(randomNumber);
+      // const emailHtml = VerificationMail(randomNumber);
 
-      const data = await this.nodeMailer.sendEmail(
-        email,
-        "Verification Code",
-        "",
-        emailHtml,
-      );
+      // const data = await this.nodeMailer.sendEmail(
+      //   email,
+      //   "Verification Code",
+      //   "",
+      //   emailHtml,
+      // );
 
       return {
         success: true,
@@ -205,6 +205,7 @@ export class AuthService {
           ...body,
           password: hashedPass,
           profile: { create: { location: { create: {} } } },
+          UsersRoles: { create: { roleId: 4 } },
         },
       });
       const tokens = await this.generateJWT({ userid: createUser.userId });
