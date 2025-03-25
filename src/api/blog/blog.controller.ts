@@ -34,11 +34,13 @@ export class BlogController {
   constructor(private readonly blogService: BlogService) {}
   @Get("listSreachFilter")
   @CustomApiQuerySwagger(SearchQueryDtoForBlogSwagger)
+  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL)
   blogListUser(@Query() query: SearchQueryDtoForBlog) {
     return this.blogService.getBlogList(query);
   }
 
   @Get("detail/:id")
+  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL)
   @ApiOperation({ summary: "Get blog details" })
   @ApiParam({ name: "id", description: "Blog ID" })
   blogDetail(@Param("id") id: string, @Req() req: Request) {

@@ -326,7 +326,6 @@ export class BlogService {
       const { search, page = 1, limit = 10, categoryId } = query;
       const skip = (page - 1) * limit;
 
-      // Build where clause
       const where = {
         ...(search && {
           OR: [
@@ -347,7 +346,6 @@ export class BlogService {
         }),
       };
 
-      // Select only necessary fields for list view
       const select = {
         blogId: true,
         title: true,
@@ -355,7 +353,7 @@ export class BlogService {
         status: true,
         image: true,
         averageRate: true,
-        createdAt: true,
+        publishedAt: true,
         updatedAt: true,
         _count: {
           select: {
@@ -375,7 +373,6 @@ export class BlogService {
         },
       };
 
-      // Execute queries in parallel
       const [blogs, total] = await Promise.all([
         this.prisma.blog.findMany({
           where,
@@ -389,7 +386,6 @@ export class BlogService {
         this.prisma.blog.count({ where }),
       ]);
 
-      // Transform the response to remove nested structures
       const transformedBlogs = blogs.map((blog) => ({
         ...blog,
         categories: blog.categories.map((cat) => ({
@@ -422,7 +418,15 @@ export class BlogService {
       const blog = await this.prisma.blog.findUnique({
         where: { blogId: id },
         include: {
-          categories: true,
+          categories: {
+            include: {
+              category: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
           _count: {
             select: {
               likes: true,
