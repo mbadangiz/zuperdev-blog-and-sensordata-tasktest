@@ -14,6 +14,8 @@ import { CreateBlogDto } from "./dto/create-blog.dto";
 import { UpdateBlogDto } from "./dto/update-blog.dto";
 import { SearchQueryDtoForBlog } from "./dto/get-all-blog.dto";
 import { Prisma } from "@prisma/client";
+import { CreateCommentDto } from "./dto/create-comment.dto";
+import { CreateCommentReplyDto } from "./dto/create-comment-reply.dto";
 
 @Injectable()
 export class BlogService {
@@ -488,6 +490,145 @@ export class BlogService {
         throw error;
       }
       throw customInternalServerError();
+    }
+  }
+
+  async createComment(body: CreateCommentDto, req: Request) {
+    const user = req.user as User;
+    const userId = user.userid;
+    await this.findBlogById(body.blogId);
+    try {
+      const createComment = await this.prisma.comments.create({
+        data: {
+          ...body,
+          userId,
+        },
+      });
+
+      if (!createComment) {
+        throw customInternalServerError();
+      }
+
+      return {
+        success: true,
+        message: "Your Comment added Successfully.",
+        commentId: createComment.commentId,
+      };
+    } catch (error) {
+      if (error instanceof InternalServerErrorException) {
+        throw customInternalServerError();
+      }
+      throw error;
+    }
+  }
+
+  async createCommentReply(body: CreateCommentReplyDto, req: Request) {
+    const user = req.user as User;
+    const userId = user.userid;
+    await this.findBlogById(body.blogId);
+
+    try {
+      const createComment = await this.prisma.comments.create({
+        data: {
+          ...body,
+          userId,
+        },
+      });
+
+      if (!createComment) {
+        throw customInternalServerError();
+      }
+
+      return {
+        success: true,
+        message: "Your Comment Reply added Successfully.",
+        commentId: createComment.commentId,
+      };
+    } catch (error) {
+      console.log(error);
+      if (error instanceof InternalServerErrorException) {
+        throw customInternalServerError();
+      }
+      throw error;
+    }
+  }
+
+  async getBlogsComment(blogId: string, page: number) {
+    const take = 10;
+    const skip = (page - 1) * take;
+
+    await this.findBlogById(blogId);
+    try {
+      const where = { blogId };
+
+      const select = {
+        commentId: true,
+        content: true,
+        createdAt: true,
+        user: {
+          select: {
+            profile: {
+              select: { firstname: true, lastname: true, avatar: true },
+            },
+          },
+        },
+      };
+
+      const [data, total] = await Promise.all([
+        this.prisma.comments.findMany({
+          where,
+          select: {
+            ...select,
+            replies: {
+              select,
+              take: 2,
+              skip: 0,
+            },
+          },
+          take: 10,
+          skip,
+          orderBy: {
+            createdAt: "desc",
+          },
+        }),
+        this.prisma.comments.count({ where }),
+      ]);
+
+      if (!data) {
+        throw customInternalServerError();
+      }
+
+      const transformedData = data.map((items) => {
+        const tData = {
+          ...items,
+          user: {
+            fullName:
+              items.user.profile?.firstname +
+              " " +
+              items.user.profile?.lastname,
+            avatar: items.user.profile?.avatar,
+          },
+          replies: items.replies.length ? true : false,
+        };
+
+        return tData;
+      });
+
+      return {
+        success: true,
+        data: transformedData,
+        pagination: {
+          total,
+          page: Number(page),
+          totalPages: Math.ceil(total / take),
+        },
+      };
+    } catch (error) {
+      console.log(error);
+      if (error instanceof InternalServerErrorException) {
+        throw customInternalServerError();
+      }
+      throw error;
     }
   }
 }

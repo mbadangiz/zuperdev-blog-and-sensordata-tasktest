@@ -12,7 +12,13 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiBody, ApiConsumes, ApiOperation, ApiParam } from "@nestjs/swagger";
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+} from "@nestjs/swagger";
 import { Request } from "express";
 import { CustomApiQuerySwagger } from "src/decorators/customApiQuerySwagger.decorator";
 import { useRoles } from "src/decorators/useRoles.decorators";
@@ -28,19 +34,27 @@ import {
   SearchQueryDtoForBlogSwagger,
 } from "./dto/get-all-blog.dto";
 import { UpdateBlogDto, UpdateBlogDtoSwagger } from "./dto/update-blog.dto";
+import {
+  CreateCommentDto,
+  CreateCommentDtoSwagger,
+} from "./dto/create-comment.dto";
+import {
+  CreateCommentReplyDto,
+  CreateCommentReplyDtoSwagger,
+} from "./dto/create-comment-reply.dto";
+import { PageQuerySwagger } from "./dto/get-comments.dto";
 
 @Controller("blog")
+@useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL)
 export class BlogController {
   constructor(private readonly blogService: BlogService) {}
   @Get("listSreachFilter")
   @CustomApiQuerySwagger(SearchQueryDtoForBlogSwagger)
-  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL)
   blogListUser(@Query() query: SearchQueryDtoForBlog) {
     return this.blogService.getBlogList(query);
   }
 
   @Get("detail/:id")
-  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL)
   @ApiOperation({ summary: "Get blog details" })
   @ApiParam({ name: "id", description: "Blog ID" })
   blogDetail(@Param("id") id: string, @Req() req: Request) {
@@ -48,7 +62,6 @@ export class BlogController {
   }
 
   @Post("create")
-  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL)
   @UseInterceptors(FileInterceptor("file"))
   @ApiConsumes("multipart/form-data")
   @ApiBody(CreateBlogDtoSwagger)
@@ -61,7 +74,6 @@ export class BlogController {
   }
 
   @Put("update/:id")
-  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL)
   @UseInterceptors(FileInterceptor("file"))
   @ApiConsumes("multipart/form-data")
   @ApiBody(UpdateBlogDtoSwagger)
@@ -74,19 +86,16 @@ export class BlogController {
   }
 
   @Post("like/:id")
-  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL)
   likeBlog(@Param("id") id: string, @Req() req: Request) {
     return this.blogService.likeBlog(id, req);
   }
 
   @Delete("unlike/:id")
-  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL)
   unLikeBlog(@Param("id") id: string, @Req() req: Request) {
     return this.blogService.unlike(id, req);
   }
 
   @Post("add-update-rate/:id")
-  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL)
   @ApiBody(AddUpdateRateDtoSwagger)
   addUpdateRate(
     @Param("id") id: string,
@@ -97,8 +106,25 @@ export class BlogController {
   }
 
   @Delete("delete-rate/:id")
-  @useRoles(UserRole.ADMIN, UserRole.EDITOR, UserRole.ORDINAL)
   deleteRate(@Param("id") id: string, @Req() req: Request) {
     return this.blogService.deleteRate(id, req);
+  }
+
+  @Post("comment")
+  @ApiBody(CreateCommentDtoSwagger)
+  createComment(@Body() body: CreateCommentDto, @Req() req: Request) {
+    return this.blogService.createComment(body, req);
+  }
+
+  @Post("comment-reply")
+  @ApiBody(CreateCommentReplyDtoSwagger)
+  createCommentReply(@Body() body: CreateCommentReplyDto, @Req() req: Request) {
+    return this.blogService.createCommentReply(body, req);
+  }
+
+  @Get("blogsComments/:id")
+  @ApiQuery(PageQuerySwagger)
+  getBlogsComment(@Param("id") id: string, @Query("page") page: number) {
+    return this.blogService.getBlogsComment(id, page);
   }
 }
