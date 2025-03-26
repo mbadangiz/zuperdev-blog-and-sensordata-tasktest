@@ -175,6 +175,7 @@ export class ProfileService {
             message:
               "Profile updated successfully. You've been granted Ordinal User status!",
             profile: updateProfile,
+            newRole: true,
           };
         }
       }
