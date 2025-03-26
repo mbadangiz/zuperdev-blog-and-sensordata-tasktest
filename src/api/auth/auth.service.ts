@@ -109,14 +109,14 @@ export class AuthService {
           message: "Failed to create OTP record.",
         });
 
-      // const emailHtml = VerificationMail(randomNumber);
+      const emailHtml = VerificationMail(randomNumber);
 
-      // const data = await this.nodeMailer.sendEmail(
-      //   email,
-      //   "Verification Code",
-      //   "",
-      //   emailHtml,
-      // );
+      const data = await this.nodeMailer.sendEmail(
+        email,
+        "Verification Code",
+        "",
+        emailHtml,
+      );
 
       return {
         success: true,
