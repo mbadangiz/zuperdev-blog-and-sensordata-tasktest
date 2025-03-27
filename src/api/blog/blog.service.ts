@@ -435,6 +435,12 @@ export class BlogService {
               rates: true,
             },
           },
+
+          Comments: {
+            select: { content: true },
+            take: 1,
+            skip: 0,
+          },
         },
       });
 
@@ -472,6 +478,7 @@ export class BlogService {
           success: true,
           data: {
             ...blog,
+            Comments: blog.Comments.length ? true : false,
             userInteraction: {
               hasLiked: !!userLike,
               userRate: userRate?.rate || null,
@@ -554,8 +561,7 @@ export class BlogService {
   }
 
   async getBlogsComment(blogId: string, page: number) {
-    const take = 10;
-    const skip = (page - 1) * take;
+    const take = 10 * page;
 
     await this.findBlogById(blogId);
     try {
@@ -586,7 +592,7 @@ export class BlogService {
             },
           },
           take: 10,
-          skip,
+          skip: 0,
           orderBy: {
             createdAt: "desc",
           },
