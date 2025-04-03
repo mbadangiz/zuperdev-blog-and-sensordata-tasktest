@@ -15,7 +15,7 @@ async function bootstrap() {
     credentials: true,
   });
 
-  await app.listen(process.env.PORT || 3000);
-  console.log("Click to view the project document=> http://localhost:3000/api");
+  await app.listen(1420);
+  console.log("Click to view the project document=> http://localhost:1420/api");
 }
 bootstrap();
